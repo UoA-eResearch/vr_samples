@@ -19,10 +19,16 @@ namespace VRStandardAssets.Utils
         [SerializeField] private bool m_ShowDebugRay;                   // Optionally show the debug ray.
         [SerializeField] private float m_DebugRayLength = 5f;           // Debug ray length.
         [SerializeField] private float m_DebugRayDuration = 1f;         // How long the Debug ray will remain visible.
-        [SerializeField] private float m_RayLength = 500f;              // How far into the scene the ray is cast.
+        [SerializeField] private float m_RayLength = 500f;
 
-        
-        private VRInteractiveItem m_CurrentInteractible;                //The current interactive item
+		[SerializeField]
+		private LineRenderer m_LineRenderer = null; // For supporting Laser Pointer
+		public bool ShowLineRenderer = true;                         // Laser pointer visibility
+		[SerializeField]
+		private Transform m_TrackingSpace = null;   // Tracking space (for line renderer)// How far into the scene the ray is cast.
+
+
+		private VRInteractiveItem m_CurrentInteractible;                //The current interactive item
         private VRInteractiveItem m_LastInteractible;                   //The last interactive item
 
 
@@ -68,12 +74,39 @@ namespace VRStandardAssets.Utils
             // Create a ray that points forwards from the camera.
             Ray ray = new Ray(m_Camera.position, m_Camera.forward);
             RaycastHit hit;
-            
-            // Do the raycast forweards to see if we hit an interactive item
-            if (Physics.Raycast(ray, out hit, m_RayLength, ~m_ExclusionLayers))
+
+			Vector3 worldStartPoint = Vector3.zero;
+			Vector3 worldEndPoint = Vector3.zero;
+			if (m_LineRenderer != null)
+			{
+				m_LineRenderer.enabled = ControllerIsConnected && ShowLineRenderer;
+			}
+
+			if (ControllerIsConnected && m_TrackingSpace != null)
+			{
+				Matrix4x4 localToWorld = m_TrackingSpace.localToWorldMatrix;
+				Quaternion orientation = OVRInput.GetLocalControllerRotation(Controller);
+
+				Vector3 localStartPoint = OVRInput.GetLocalControllerPosition(Controller);
+				Vector3 localEndPoint = localStartPoint + ((orientation * Vector3.forward) * 500.0f);
+
+				worldStartPoint = localToWorld.MultiplyPoint(localStartPoint);
+				worldEndPoint = localToWorld.MultiplyPoint(localEndPoint);
+
+				// Create new ray
+				ray = new Ray(worldStartPoint, worldEndPoint - worldStartPoint);
+			}
+
+			// Do the raycast forweards to see if we hit an interactive item
+			if (Physics.Raycast(ray, out hit, m_RayLength, ~m_ExclusionLayers))
             {
                 VRInteractiveItem interactible = hit.collider.GetComponent<VRInteractiveItem>(); //attempt to get the VRInteractiveItem on the hit object
-                m_CurrentInteractible = interactible;
+
+				if (interactible)
+				{
+					worldEndPoint = hit.point;
+				}
+				m_CurrentInteractible = interactible;
 
                 // If we hit an interactive item and it's not the same as the last interactive item, then call Over
                 if (interactible && interactible != m_LastInteractible)
@@ -100,9 +133,14 @@ namespace VRStandardAssets.Utils
 
                 // Position the reticle at default distance.
                 if (m_Reticle)
-                    m_Reticle.SetPosition();
-            }
-        }
+					m_Reticle.SetPosition(ray.origin, ray.direction);
+			}
+			if (ControllerIsConnected && m_LineRenderer != null)
+			{
+				m_LineRenderer.SetPosition(0, worldStartPoint);
+				m_LineRenderer.SetPosition(1, worldEndPoint);
+			}
+		}
 
 
         private void DeactiveLastInteractible()
@@ -142,5 +180,30 @@ namespace VRStandardAssets.Utils
                 m_CurrentInteractible.DoubleClick();
 
         }
-    }
+
+		public bool ControllerIsConnected
+		{
+			get
+			{
+				OVRInput.Controller controller = OVRInput.GetConnectedControllers() & (OVRInput.Controller.LTrackedRemote | OVRInput.Controller.RTrackedRemote);
+				return controller == OVRInput.Controller.LTrackedRemote || controller == OVRInput.Controller.RTrackedRemote;
+			}
+		}
+		public OVRInput.Controller Controller
+		{
+			get
+			{
+				OVRInput.Controller controller = OVRInput.GetConnectedControllers();
+				if ((controller & OVRInput.Controller.LTrackedRemote) == OVRInput.Controller.LTrackedRemote)
+				{
+					return OVRInput.Controller.LTrackedRemote;
+				}
+				else if ((controller & OVRInput.Controller.RTrackedRemote) == OVRInput.Controller.RTrackedRemote)
+				{
+					return OVRInput.Controller.RTrackedRemote;
+				}
+				return OVRInput.GetActiveController();
+			}
+		}
+	}
 }

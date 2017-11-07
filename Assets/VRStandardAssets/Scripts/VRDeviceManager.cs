@@ -41,5 +41,20 @@ namespace VRStandardAssets.Utils
                 Destroy (gameObject);
             }
         }
-    }
+
+		private void Update()
+		{
+			if (OVRManager.instance == null)
+			{
+				OVRInput.Update();
+			}
+		}
+		private void FixedUpdate()
+		{
+			if (OVRManager.instance == null)
+			{
+				OVRInput.FixedUpdate();
+			}
+		}
+	}
 }

@@ -32,7 +32,10 @@ namespace VRStandardAssets.ShootingGallery
         [SerializeField] private InputWarnings m_InputWarnings;         // Tap warnings need to be on for the intro and outro but off for the game itself.
 
 
-        private float m_SpawnProbability;                               // The current probability that a target will spawn at the next interval.
+		[SerializeField]
+		private VREyeRaycaster m_EyeRaycaster;
+
+		private float m_SpawnProbability;                               // The current probability that a target will spawn at the next interval.
         private float m_ProbabilityDelta;                               // The difference to the probability caused by a target spawning or despawning.
 
 
@@ -86,8 +89,13 @@ namespace VRStandardAssets.ShootingGallery
 
         private IEnumerator PlayPhase ()
         {
-            // Wait for the UI on the player's gun to fade in.
-            yield return StartCoroutine(m_UIController.ShowPlayerUI());
+
+			if (m_EyeRaycaster != null)
+			{
+				m_EyeRaycaster.ShowLineRenderer = false;
+			}
+			// Wait for the UI on the player's gun to fade in.
+			yield return StartCoroutine(m_UIController.ShowPlayerUI());
 
             // The game is now playing.
             IsPlaying = true;
@@ -106,7 +114,11 @@ namespace VRStandardAssets.ShootingGallery
 
             // The game is no longer playing.
             IsPlaying = false;
-        }
+			if (m_EyeRaycaster != null)
+			{
+				m_EyeRaycaster.ShowLineRenderer = true;
+			}
+		}
 
 
         private IEnumerator EndPhase ()

@@ -151,7 +151,7 @@ PlayerSettings:
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 21
   AndroidTargetSdkVersion: 0
-  AndroidPreferredInstallLocation: 1
+  AndroidPreferredInstallLocation: 0
   aotOptions: 
   stripEngineCode: 1
   iPhoneStrippingLevel: 0
@@ -632,8 +632,8 @@ PlayerSettings:
   cloudServicesEnabled: {}
   facebookSdkVersion: 7.9.1
   apiCompatibilityLevel: 2
-  cloudProjectId: f613e7c4-0d16-4386-9a8f-ce4296de00a2
-  projectName: vr_samples
+  cloudProjectId: 90012057-db89-47de-9b13-2e51fb9963eb
+  projectName: gear_vr_test
   organizationId: uoacer
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0

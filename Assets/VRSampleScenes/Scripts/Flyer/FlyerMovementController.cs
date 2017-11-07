@@ -70,8 +70,8 @@ namespace VRStandardAssets.Flyer
         {
             while (m_IsGameRunning)
             {
-                // Set the target marker position to a point forward of the camera multiplied by the distance from the camera.
-                Quaternion headRotation = InputTracking.GetLocalRotation (VRNode.Head);
+				// Set the target marker position to a point forward of the camera multiplied by the distance from the camera.
+				Quaternion headRotation = GetOrientation;
                 m_TargetMarker.position = m_Camera.position + (headRotation * Vector3.forward) * m_DistanceFromCamera;
 
                 // Move the camera container forward.
@@ -98,5 +98,22 @@ namespace VRStandardAssets.Flyer
                 yield return null;
             }
         }
-    }
+
+		protected Quaternion GetOrientation
+		{
+			get
+			{
+				OVRInput.Controller controller = OVRInput.GetConnectedControllers();
+				if ((controller & OVRInput.Controller.LTrackedRemote) != OVRInput.Controller.None)
+				{
+					return OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTrackedRemote);
+				}
+				else if ((controller & OVRInput.Controller.RTrackedRemote) != OVRInput.Controller.None)
+				{
+					return OVRInput.GetLocalControllerRotation(OVRInput.Controller.RTrackedRemote);
+				}
+				return InputTracking.GetLocalRotation(VRNode.Head);
+			}
+		}
+	}
 }

@@ -111,9 +111,12 @@ namespace VRStandardAssets.Utils
             // If the Cancel button is pressed and there are subscribers to OnCancel call it.
             if (Input.GetButtonDown("Cancel"))
             {
-                if (OnCancel != null)
-                    OnCancel();
-            }
+				if (Input.GetButtonDown("Cancel") || OVRInput.GetDown(OVRInput.RawButton.Back, OVRInput.Controller.LTrackedRemote) || OVRInput.GetDown(OVRInput.RawButton.Back, OVRInput.Controller.RTrackedRemote))
+				{
+					if (OnCancel != null)
+						OnCancel();
+				}
+			}
         }
 
 

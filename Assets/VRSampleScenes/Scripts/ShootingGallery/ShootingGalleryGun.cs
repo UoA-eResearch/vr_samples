@@ -50,7 +50,7 @@ namespace VRStandardAssets.ShootingGallery
         private void Update()
         {
             // Smoothly interpolate this gameobject's rotation towards that of the user/camera.
-            transform.rotation = Quaternion.Slerp(transform.rotation, InputTracking.GetLocalRotation(VRNode.Head),
+            transform.rotation = Quaternion.Slerp(transform.rotation, GetOrientation,
                 m_Damping * (1 - Mathf.Exp(k_DampingCoef * Time.deltaTime)));
             
             // Move this gameobject to the camera.
@@ -142,5 +142,22 @@ namespace VRStandardAssets.ShootingGallery
                 timer += Time.deltaTime;
             }
         }
-    }
+
+		protected Quaternion GetOrientation
+		{
+			get
+			{
+				OVRInput.Controller controller = OVRInput.GetConnectedControllers();
+				if ((controller & OVRInput.Controller.LTrackedRemote) != OVRInput.Controller.None)
+				{
+					return OVRInput.GetLocalControllerRotation(OVRInput.Controller.LTrackedRemote);
+				}
+				else if ((controller & OVRInput.Controller.RTrackedRemote) != OVRInput.Controller.None)
+				{
+					return OVRInput.GetLocalControllerRotation(OVRInput.Controller.RTrackedRemote);
+				}
+				return InputTracking.GetLocalRotation(VRNode.Head);
+			}
+		}
+	}
 }

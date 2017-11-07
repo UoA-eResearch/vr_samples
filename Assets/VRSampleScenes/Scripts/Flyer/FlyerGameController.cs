@@ -24,9 +24,11 @@ namespace VRStandardAssets.Flyer
         [SerializeField] private InputWarnings m_InputWarnings;                             // This needs to know when to show different warnings.
         [SerializeField] private VRCameraFade m_CameraFade;                                 // This is used to fade out and back in again as the game starts.
         [SerializeField] private SelectionRadial m_SelectionRadial;                         // Used to restart the game.
-        
 
-        private float m_EndTime;                                                            // The time at the point the game should end.
+		[SerializeField]
+		private VREyeRaycaster m_EyeRaycaster;
+
+		private float m_EndTime;                                                            // The time at the point the game should end.
         private float m_TimeRemaining;                                                      // The time until the game should end.
         private bool m_IsGameRunning;                                                       // Whether the game is currently running.
 
@@ -91,8 +93,13 @@ namespace VRStandardAssets.Flyer
 
         private IEnumerator PlayPhase ()
         {
-            // The game is now running.
-            m_IsGameRunning = true;
+
+			if (m_EyeRaycaster != null)
+			{
+				m_EyeRaycaster.ShowLineRenderer = false;
+			}
+			// The game is now running.
+			m_IsGameRunning = true;
 
             // Start the various controllers.
             m_AlignmentChecker.StartGame ();
@@ -117,7 +124,11 @@ namespace VRStandardAssets.Flyer
             
             // Upon reaching this point either the time has run out or the flyer is dead, either way the game is no longer running.
             m_IsGameRunning = false;
-        }
+			if (m_EyeRaycaster != null)
+			{
+				m_EyeRaycaster.ShowLineRenderer = true;
+			}
+		}
 
 
         private IEnumerator EndPhase ()
